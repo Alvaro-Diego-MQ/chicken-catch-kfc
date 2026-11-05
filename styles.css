@@ -960,3 +960,6 @@ body.is-ready .welcome__art { animation: popIn .9s var(--ease-pop) .2s both; }
   .ticker__group + .ticker__group { display: none; }
   .ticker__viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
 }
+.welcome__title {
+  font-size: clamp(2.9rem, 4.5vw, 3.9rem);
+}
