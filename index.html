@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chicken Catch — Juega y gana un cupón (demo no oficial)</title>
+  <meta name="description" content="Minijuego promocional de demostración: atrapa el pollo, llega a 25 puntos y descubre tu cupón ficticio. Prototipo no oficial.">
+  <meta name="theme-color" content="#E4002B">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%97%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="is-loading" data-screen="welcome">
+
+<!-- ======================================================================
+     SPRITE SVG: ilustraciones provisionales (se sustituyen por tus PNG
+     cuando los actives en script.js > CONFIG.assets). Iconos de interfaz.
+     ====================================================================== -->
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gCrisp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7B84B"/><stop offset=".5" stop-color="#E08A1E"/><stop offset="1" stop-color="#B2500E"/></linearGradient>
+    <linearGradient id="gCrisp2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD964"/><stop offset=".5" stop-color="#F4A71D"/><stop offset="1" stop-color="#C9620F"/></linearGradient>
+    <linearGradient id="gBone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#EBD9B6"/></linearGradient>
+    <radialGradient id="gGlow"><stop offset="0" stop-color="#FFE27A" stop-opacity=".85"/><stop offset="1" stop-color="#FFC62E" stop-opacity="0"/></radialGradient>
+    <linearGradient id="gTeal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3FD6E6"/><stop offset="1" stop-color="#0B7D95"/></linearGradient>
+    <linearGradient id="gPurple" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9B66EA"/><stop offset="1" stop-color="#4B1E94"/></linearGradient>
+    <linearGradient id="gGreen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8BE05A"/><stop offset="1" stop-color="#2A7D1A"/></linearGradient>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4C8CFF"/><stop offset="1" stop-color="#1C45A8"/></linearGradient>
+    <linearGradient id="gShade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+    <pattern id="pStripes" width="44" height="10" patternUnits="userSpaceOnUse"><rect width="22" height="10" fill="#E4002B"/><rect x="22" width="22" height="10" fill="#fff"/></pattern>
+    <clipPath id="cpBucket"><path d="M24 74H176L158 196Q156 208 144 208H56Q44 208 42 196Z"/></clipPath>
+  </defs>
+
+  <!-- Pierna de pollo -->
+  <symbol id="sym-leg" viewBox="0 0 100 100">
+    <g transform="rotate(-35 50 50)">
+      <circle cx="41" cy="88" r="8.5" fill="url(#gBone)" stroke="#CDB68C" stroke-width="2.5"/>
+      <circle cx="59" cy="88" r="8.5" fill="url(#gBone)" stroke="#CDB68C" stroke-width="2.5"/>
+      <rect x="43" y="56" width="14" height="30" rx="6" fill="url(#gBone)" stroke="#CDB68C" stroke-width="2.5"/>
+      <path d="M50 8C77 8 91 28 85 46 80 60 66 66 50 66 34 66 20 60 15 46 9 28 23 8 50 8Z" fill="url(#gCrisp)" stroke="#7A3F0E" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M30 22C36 14 48 11 58 13" stroke="#FFE7A8" stroke-width="5" stroke-linecap="round" fill="none" opacity=".7"/>
+      <g fill="#B4600F" opacity=".55"><circle cx="60" cy="34" r="2.6"/><circle cx="42" cy="44" r="2"/><circle cx="68" cy="50" r="2.2"/><circle cx="30" cy="38" r="1.8"/><circle cx="52" cy="56" r="1.8"/></g>
+      <g fill="#FFD58A" opacity=".8"><circle cx="46" cy="28" r="1.8"/><circle cx="72" cy="38" r="1.6"/><circle cx="36" cy="52" r="1.6"/></g>
+    </g>
+  </symbol>
+
+  <!-- Alita de pollo -->
+  <symbol id="sym-wing" viewBox="0 0 100 100">
+    <g transform="rotate(8 50 50)">
+      <rect x="9" y="64" width="13" height="22" rx="6" transform="rotate(22 15 72)" fill="url(#gBone)" stroke="#CDB68C" stroke-width="2.5"/>
+      <circle cx="13" cy="86" r="7" fill="url(#gBone)" stroke="#CDB68C" stroke-width="2.5"/>
+      <path d="M16 62C10 38 28 18 54 20 78 22 92 38 88 56 84 72 68 82 52 80 44 79 40 74 34 75 26 77 18 72 16 62Z" fill="url(#gCrisp)" stroke="#7A3F0E" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M34 36C46 30 66 32 74 44" stroke="#8A4510" stroke-width="3" stroke-linecap="round" fill="none" opacity=".45"/>
+      <path d="M28 40C34 30 46 26 58 27" stroke="#FFE7A8" stroke-width="5" stroke-linecap="round" fill="none" opacity=".7"/>
+      <g fill="#B4600F" opacity=".55"><circle cx="62" cy="52" r="2.4"/><circle cx="46" cy="58" r="2"/><circle cx="76" cy="46" r="2"/><circle cx="34" cy="56" r="1.8"/></g>
+    </g>
+  </symbol>
+
+  <!-- Pieza especial (+2) -->
+  <symbol id="sym-special" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="url(#gGlow)"/>
+    <path d="M50 12C78 10 92 32 86 54 80 76 62 90 44 88 24 86 10 70 14 46 18 26 32 14 50 12Z" fill="url(#gCrisp2)" stroke="#7A3F0E" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M28 30C36 20 50 16 62 19" stroke="#FFF2C0" stroke-width="6" stroke-linecap="round" fill="none" opacity=".75"/>
+    <g fill="#B4600F" opacity=".5"><circle cx="58" cy="44" r="3"/><circle cx="40" cy="56" r="2.4"/><circle cx="68" cy="64" r="2.6"/><circle cx="32" cy="40" r="2"/><circle cx="52" cy="72" r="2.2"/></g>
+    <path d="M84 16l2.6 6.4L93 25l-6.4 2.6L84 34l-2.6-6.4L75 25l6.4-2.6z" fill="#FFF3B0" stroke="#FFC62E" stroke-width="1.5"/>
+    <path d="M14 78l2 4.8L21 85l-5 2-2 4.8-2-4.8-5-2 5-2.2z" fill="#FFF3B0" stroke="#FFC62E" stroke-width="1.2"/>
+  </symbol>
+
+  <!-- Botella (penalización) -->
+  <symbol id="sym-bottle" viewBox="0 0 100 100">
+    <g transform="rotate(14 50 50)">
+      <rect x="40" y="3" width="20" height="10" rx="3" fill="#13324A" stroke="#0A1F2F" stroke-width="2"/>
+      <path d="M42 13h16v10c0 6 12 8 12 22v40c0 6-5 10-10 10H40c-5 0-10-4-10-10V45c0-14 12-16 12-22z" fill="url(#gTeal)" stroke="#0A4458" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="30" y="50" width="40" height="22" fill="#F4FBFC"/>
+      <path d="M30 61c7-5 13 5 20 0s13 5 20 0" stroke="#19A5BD" stroke-width="3.5" fill="none"/>
+      <path d="M37 40v8M37 76v12" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+      <circle cx="52" cy="36" r="2" fill="#fff" opacity=".6"/><circle cx="58" cy="82" r="2.4" fill="#fff" opacity=".5"/>
+    </g>
+  </symbol>
+
+  <!-- Vaso de refresco (penalización) -->
+  <symbol id="sym-cup" viewBox="0 0 100 100">
+    <g transform="rotate(-10 50 50)">
+      <path d="M56 22L67 4" stroke="#F4F0E4" stroke-width="6" stroke-linecap="round"/>
+      <path d="M56 22L67 4" stroke="#2B6DE0" stroke-width="6" stroke-linecap="round" stroke-dasharray="4 6"/>
+      <rect x="22" y="21" width="56" height="10" rx="4.5" fill="#F4F7FF" stroke="#1B3F9E" stroke-width="2.5"/>
+      <path d="M26 31h48l-6 58c-.4 4-3 6-7 6H39c-4 0-6.6-2-7-6z" fill="url(#gBlue)" stroke="#142C73" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M28.4 52h43.2l-1.3 14H29.7z" fill="#F4F7FF" opacity=".92"/>
+      <circle cx="40" cy="59" r="3.2" fill="#2B6DE0"/><circle cx="50" cy="59" r="3.2" fill="#2B6DE0"/><circle cx="60" cy="59" r="3.2" fill="#2B6DE0"/>
+      <path d="M36 36l-2 12" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".4"/>
+    </g>
+  </symbol>
+
+  <!-- Lata (objeto a evitar) -->
+  <symbol id="sym-can" viewBox="0 0 100 100">
+    <g transform="rotate(12 50 50)">
+      <path d="M28 20V84a22 7 0 0 0 44 0V20Z" fill="url(#gPurple)" stroke="#2B1245" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="28" y="40" width="44" height="26" fill="#F4F0FF"/>
+      <path d="M28 53c7-6 14 6 22 0s15 6 22 0" stroke="#7B3FC4" stroke-width="3.5" fill="none"/>
+      <ellipse cx="50" cy="20" rx="22" ry="7" fill="#DDD7EC" stroke="#2B1245" stroke-width="3"/>
+      <ellipse cx="50" cy="20" rx="12" ry="3.6" fill="#9a93ad"/>
+      <path d="M36 28v10M36 70v12" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".45"/>
+    </g>
+  </symbol>
+
+  <!-- Chile (objeto a evitar) -->
+  <symbol id="sym-chili" viewBox="0 0 100 100">
+    <g transform="rotate(-18 50 50)">
+      <path d="M32 22C28 44 34 70 56 90C62 95 70 89 66 82C58 62 64 40 66 24C62 12 36 12 32 22Z" fill="url(#gGreen)" stroke="#12400f" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M42 16C44 4 56 2 62 8" stroke="#3a2a10" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M41 30C42 48 48 64 56 78" stroke="#c6f59a" stroke-width="4" stroke-linecap="round" opacity=".6" fill="none"/>
+    </g>
+  </symbol>
+
+  <!-- Resorte (objeto a evitar) -->
+  <symbol id="sym-spring" viewBox="0 0 100 100">
+    <g transform="rotate(-18 50 50)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M26 12L74 23L26 35L74 46L26 58L74 69L26 80L74 90" stroke="#3b4650" stroke-width="13"/>
+      <path d="M26 12L74 23L26 35L74 46L26 58L74 69L26 80L74 90" stroke="#B9C4CE" stroke-width="8"/>
+      <path d="M26 12L74 23L26 35L74 46L26 58L74 69L26 80L74 90" stroke="#fff" stroke-width="2.4" opacity=".7"/>
+    </g>
+  </symbol>
+
+  <!-- Balde ilustrativo (genérico, sin logotipos) -->
+  <symbol id="sym-bucket" viewBox="0 -22 200 246">
+    <ellipse cx="100" cy="214" rx="66" ry="8" fill="#000" opacity=".28"/>
+    <use href="#sym-wing" x="-2" y="14" width="86" height="86"/>
+    <g transform="translate(200 0) scale(-1 1)"><use href="#sym-leg" x="6" y="6" width="90" height="90"/></g>
+    <use href="#sym-leg" x="22" y="-6" width="88" height="88"/>
+    <use href="#sym-special" x="58" y="-16" width="96" height="96"/>
+    <g clip-path="url(#cpBucket)">
+      <rect x="0" y="70" width="200" height="145" fill="url(#pStripes)"/>
+      <rect x="0" y="70" width="200" height="145" fill="url(#gShade)"/>
+    </g>
+    <path d="M24 74H176L158 196Q156 208 144 208H56Q44 208 42 196Z" fill="none" stroke="#26191A" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="14" y="62" width="172" height="18" rx="9" fill="#C8001F" stroke="#26191A" stroke-width="4"/>
+    <path d="M26 69h60" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+    <ellipse cx="100" cy="142" rx="45" ry="34" fill="#FFF4DE" stroke="#26191A" stroke-width="4"/>
+    <text x="100" y="136" text-anchor="middle" font-family="Alfa Slab One, Rockwell, Georgia, serif" font-size="17" fill="#E4002B">CHICKEN</text>
+    <text x="100" y="156" text-anchor="middle" font-family="Alfa Slab One, Rockwell, Georgia, serif" font-size="17" fill="#26191A">CATCH</text>
+  </symbol>
+
+  <!-- Balde abierto (juego Basket): capa trasera y delantera con la misma caja 200x170 -->
+  <symbol id="sym-hoop-back" viewBox="0 0 200 170">
+    <ellipse cx="100" cy="30" rx="86" ry="21" fill="#2a000a" stroke="#26191A" stroke-width="14"/>
+    <ellipse cx="100" cy="30" rx="86" ry="21" fill="none" stroke="#E4002B" stroke-width="7"/>
+    <ellipse cx="100" cy="33" rx="68" ry="12" fill="#14000a" opacity=".65"/>
+  </symbol>
+  <symbol id="sym-hoop-front" viewBox="0 0 200 170">
+    <clipPath id="cpHoop"><path d="M16 30A86 21 0 0 0 184 30L160 160Q158 168 148 168H52Q42 168 40 160Z"/></clipPath>
+    <g clip-path="url(#cpHoop)">
+      <rect x="0" y="20" width="200" height="152" fill="url(#pStripes)"/>
+      <rect x="0" y="20" width="200" height="152" fill="url(#gShade)"/>
+    </g>
+    <path d="M16 30A86 21 0 0 0 184 30L160 160Q158 168 148 168H52Q42 168 40 160Z" fill="none" stroke="#26191A" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M14 30A88 23 0 0 0 186 30" fill="none" stroke="#26191A" stroke-width="15" stroke-linecap="round"/>
+    <path d="M14 30A88 23 0 0 0 186 30" fill="none" stroke="#E4002B" stroke-width="7" stroke-linecap="round"/>
+    <path d="M40 40A70 15 0 0 0 78 52" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+  </symbol>
+  <symbol id="sym-hoop" viewBox="0 0 200 170">
+    <use href="#sym-hoop-back" x="0" y="0" width="200" height="170"/>
+    <use href="#sym-hoop-front" x="0" y="0" width="200" height="170"/>
+  </symbol>
+
+  <!-- Tercera imagen del héroe: tres juegos -->
+  <symbol id="sym-hero3" viewBox="0 -22 200 246">
+    <ellipse cx="100" cy="212" rx="76" ry="9" fill="#000" opacity=".28"/>
+    <circle cx="100" cy="96" r="94" fill="url(#gGlow)"/>
+    <path d="M26 118C44 6 156 6 174 118" fill="none" stroke="#FFC62E" stroke-width="3.5" stroke-dasharray="1 10" stroke-linecap="round"/>
+    <use href="#sym-leg" x="0" y="36" width="68" height="68"/>
+    <use href="#sym-wing" x="132" y="36" width="68" height="68"/>
+    <use href="#sym-special" x="62" y="-20" width="78" height="78"/>
+    <use href="#sym-hoop" x="26" y="84" width="148" height="128"/>
+    <path d="M18 150h164l-11 21 11 21H18l11-21z" fill="#E4002B" stroke="#26191A" stroke-width="4" stroke-linejoin="round"/>
+    <text x="100" y="178" text-anchor="middle" font-family="Alfa Slab One, Rockwell, Georgia, serif" font-size="21" fill="#FFF4DE">¡3 JUEGOS!</text>
+  </symbol>
+
+  <!-- Segunda imagen del héroe: surtido de piezas -->
+  <symbol id="sym-pieces" viewBox="0 -22 200 246">
+    <ellipse cx="100" cy="206" rx="80" ry="10" fill="#000" opacity=".28"/>
+    <circle cx="100" cy="100" r="96" fill="url(#gGlow)"/>
+    <use href="#sym-wing" x="-6" y="64" width="108" height="108"/>
+    <g transform="translate(200 0) scale(-1 1)"><use href="#sym-wing" x="-6" y="64" width="108" height="108"/></g>
+    <use href="#sym-leg" x="4" y="14" width="104" height="104"/>
+    <g transform="translate(200 0) scale(-1 1)"><use href="#sym-leg" x="4" y="14" width="104" height="104"/></g>
+    <use href="#sym-special" x="32" y="22" width="136" height="136"/>
+    <path d="M24 148h152l-11 22 11 22H24l11-22z" fill="#E4002B" stroke="#26191A" stroke-width="4" stroke-linejoin="round"/>
+    <text x="100" y="177" text-anchor="middle" font-family="Alfa Slab One, Rockwell, Georgia, serif" font-size="21" fill="#FFF4DE">¡CRUJIENTE!</text>
+  </symbol>
+
+  <!-- Iconos de interfaz -->
+  <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 2.8l2.7 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.6 3.1 1.2-6.3L3 9.4l6.3-.8z" fill="currentColor"/></symbol>
+  <symbol id="ic-miss" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 7v8m0 0l-3-3m3 3l3-3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.4-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z" fill="currentColor"/></symbol>
+  <symbol id="ic-pause" viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></symbol>
+  <symbol id="ic-vol" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="ic-mute" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 8.5V13l3 2M9.5 2.5h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="12" rx="2.2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 5.5v-.3A1.7 1.7 0 0 0 13.8 3.5H6.2A1.7 1.7 0 0 0 4.5 5.2v8.6a1.7 1.7 0 0 0 1.7 1.7h.3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="ic-replay" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5M4.5 4.5v4h4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<!-- Fondo animado -->
+<div class="bg" aria-hidden="true"><div class="bg__rays"></div><div class="bg__dots"></div><div class="bg__vignette"></div></div>
+<!-- Toldo decorativo -->
+<div class="awning" aria-hidden="true"></div>
+
+<!-- ======================== ENCABEZADO ======================== -->
+<header class="site-header">
+  <button type="button" class="brand" id="brand-home" aria-label="Ir al inicio" title="Ir al inicio">
+    <!-- LOGOTIPO REEMPLAZABLE: se rellena con assets/images/logo.png si lo activas en CONFIG -->
+    <span class="brand__logo" id="brand-logo"><span class="brand__placeholder">TU LOGO</span></span>
+    <span class="brand__name">Chicken Catch</span>
+  </button>
+
+  <ol class="steps" id="steps" aria-label="Progreso de la experiencia">
+    <li data-step="welcome"><span class="steps__num">1</span><span class="steps__txt">Inicio</span></li>
+    <li data-step="select"><span class="steps__num">2</span><span class="steps__txt">Juego</span></li>
+    <li data-step="game"><span class="steps__num">3</span><span class="steps__txt">Reto</span></li>
+    <li data-step="rewards"><span class="steps__num">4</span><span class="steps__txt">Premio</span></li>
+    <li data-step="coupon"><span class="steps__num">5</span><span class="steps__txt">Cupón</span></li>
+  </ol>
+
+  <!-- Reproductor: solo aparece si hay audio disponible -->
+  <div class="player" id="player" role="group" aria-label="Música y sonido" hidden>
+    <button type="button" class="player__btn" id="btn-music" aria-label="Reproducir música" aria-pressed="false" hidden>
+      <svg aria-hidden="true"><use id="ic-music" href="#ic-play"/></svg>
+    </button>
+    <span class="eq" id="eq" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></span>
+    <span class="player__status" id="player-status" hidden>Música en pausa</span>
+    <button type="button" class="player__btn player__btn--ghost" id="btn-mute" aria-label="Silenciar todo el sonido" aria-pressed="false">
+      <svg aria-hidden="true"><use id="ic-mute-use" href="#ic-vol"/></svg>
+    </button>
+    <input class="vol" id="vol" type="range" min="0" max="100" step="1" value="35" aria-label="Volumen">
+  </div>
+</header>
+
+<!-- ======================== PANTALLAS ======================== -->
+<main class="stage" id="stage">
+
+  <!-- 1. BIENVENIDA -->
+  <section class="screen is-active" id="screen-welcome" aria-labelledby="welcome-title">
+    <div class="welcome">
+      <div class="welcome__copy">
+        <div class="chips" style="--i:0">
+          <p class="chip"><svg aria-hidden="true"><use href="#ic-clock"/></svg>Partida de <strong data-bind="duration">50</strong> segundos</p>
+        </div>
+        <h1 class="display" id="welcome-title" style="--i:1">¡JUEGA Y GANA UN CUPÓN DE DESCUENTO!</h1>
+        <p class="lead" style="--i:2">Atrapa, encesta o recoge el pollo y descubre tu recompensa</p>
+        <div class="cta-row" style="--i:3">
+          <button type="button" class="btn btn--primary btn--xl" id="btn-play">
+            <svg class="btn__icon" aria-hidden="true"><use href="#ic-play"/></svg><span>¡JUGAR AHORA!</span>
+          </button>
+        </div>
+        <ul class="howto" id="howto" aria-label="Cómo se juega" style="--i:4"></ul>
+      </div>
+
+      <div class="welcome__art">
+        <div class="hero">
+          <div class="hero__glow"></div>
+          <div class="hero__art" id="hero-art"></div>
+          <div class="hero__burst" id="hero-burst" aria-hidden="true"></div>
+          <div class="hero__dots" id="hero-dots"></div>
+          <div class="sticker" role="img" aria-label="Partida de 50 segundos"><b data-bind="duration">50</b><span>SEG</span></div>
+          <svg class="float float--1" viewBox="0 0 100 100" aria-hidden="true"><use href="#sym-leg"/></svg>
+          <svg class="float float--2" viewBox="0 0 100 100" aria-hidden="true"><use href="#sym-wing"/></svg>
+          <svg class="float float--3" viewBox="0 0 100 100" aria-hidden="true"><use href="#sym-special"/></svg>
+          <svg class="float float--4" viewBox="0 0 100 100" aria-hidden="true"><use href="#sym-leg"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1b. ELEGIR JUEGO -->
+  <section class="screen screen--select" id="screen-select" aria-labelledby="select-title">
+    <div class="select">
+      <h2 class="display" id="select-title">¡ELIGE TU JUEGO!</h2>
+      <p class="lead">Tres retos de <span data-bind="duration">50</span> segundos. Cumple la meta y destapa tu cupón</p>
+      <div class="games" id="games"></div>
+    </div>
+  </section>
+
+  <!-- 2. JUEGO -->
+  <section class="screen screen--game" id="screen-game" aria-label="Minijuego">
+    <div class="hud">
+      <div class="hud__score">
+        <span class="hud__label">PUNTOS</span>
+        <span class="hud__value"><b id="hud-score">0</b><small>/ <span data-bind="target">25</span></small></span>
+      </div>
+      <div class="hud__progress" id="hud-progress" role="progressbar" aria-label="Progreso hacia la meta" aria-valuemin="0" aria-valuemax="25" aria-valuenow="0">
+        <div class="hud__bar"><i id="hud-bar"></i></div>
+        <span class="hud__goal" aria-hidden="true">META</span>
+      </div>
+      <div class="hud__time" id="hud-timebox">
+        <span class="hud__label">TIEMPO</span>
+        <div class="ring" id="hud-ring"><b id="hud-time">50</b><small>s</small></div>
+      </div>
+    </div>
+
+    <div class="arena" id="arena" tabindex="0" aria-label="Zona de juego. Sigue las instrucciones del juego elegido. Con teclado: flechas y espacio. Pausa con la tecla P.">
+      <div class="arena__rays"></div>
+      <div class="arena__ground" id="ground"></div>
+      <div class="arena__items" id="items"></div>
+      <div class="arena__layer" id="basket-layer" hidden></div>
+      <div class="arena__layer" id="collect-layer" hidden></div>
+      <div class="arena__fx" id="fx"></div>
+      <div class="kb-lane" id="kb-lane" hidden></div>
+      <div class="arena__flash" id="flash"></div>
+      <button type="button" class="arena__restart" id="btn-restart" aria-label="Reiniciar este juego" title="Reiniciar" hidden><svg aria-hidden="true"><use href="#ic-replay"/></svg></button>
+      <button type="button" class="arena__pause" id="btn-pause" aria-label="Pausar partida" title="Pausa (P)" hidden><svg aria-hidden="true"><use href="#ic-pause"/></svg></button>
+      <div class="countdown" id="countdown" hidden><span id="countdown-num">3</span></div>
+      <div class="overlay" id="overlay-win" hidden>
+        <div class="overlay__rays"></div>
+        <div class="overlay__body">
+          <h2 class="display">¡LO LOGRASTE!</h2>
+          <p class="lead">¡Has desbloqueado tu recompensa!</p>
+          <p class="win__record" id="win-record" hidden></p>
+        </div>
+      </div>
+      <div class="overlay overlay--pause" id="overlay-pause" hidden role="dialog" aria-label="Partida en pausa">
+        <div class="overlay__body">
+          <h2 class="display display--md">PAUSA</h2>
+          <div class="btn-row">
+            <button type="button" class="btn btn--primary" id="btn-resume"><svg class="btn__icon" aria-hidden="true"><use href="#ic-play"/></svg><span>SEGUIR JUGANDO</span></button>
+            <button type="button" class="btn btn--ghost" id="btn-restart2"><svg class="btn__icon" aria-hidden="true"><use href="#ic-replay"/></svg><span>Reiniciar</span></button>
+            <button type="button" class="btn btn--ghost" id="btn-quit"><span>Salir al inicio</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="kb-hint">Teclado: ← → para moverte · Espacio para atrapar · P para pausar</p>
+  </section>
+
+  <!-- 2b. DERROTA -->
+  <section class="screen screen--lose" id="screen-lose" aria-labelledby="lose-title">
+    <div class="panel">
+      <div class="panel__art tilt" data-art="hero" data-symbol="sym-bucket"></div>
+      <h2 class="display display--md" id="lose-title">¡CASI LO LOGRAS!</h2>
+      <p class="final">Puntuación final <b id="lose-score">0</b> <span>/ <span data-bind="target">25</span></span></p>
+      <div class="meter" aria-hidden="true"><i id="lose-bar"></i></div>
+      <p class="panel__msg" id="lose-msg"></p>
+      <div class="btn-row">
+        <button type="button" class="btn btn--red" id="btn-retry"><svg class="btn__icon" aria-hidden="true"><use href="#ic-replay"/></svg><span>INTENTAR DE NUEVO</span></button>
+        <button type="button" class="btn btn--ghost-dark" id="btn-change"><span>Cambiar de juego</span></button>
+        <button type="button" class="btn btn--ghost-dark" id="btn-home"><span>Inicio</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. TARJETAS -->
+  <section class="screen screen--rewards" id="screen-rewards" aria-labelledby="rewards-title">
+    <div class="rewards">
+      <h2 class="display" id="rewards-title">¡ELIGE TU PREMIO!</h2>
+      <p class="lead">Has conseguido superar el reto. Selecciona una de las tres tarjetas para descubrir tu recompensa</p>
+
+      <div class="cards" id="cards">
+        <button type="button" class="prize-card prize-card--1" data-card="0" aria-label="Tarjeta misteriosa 1 de 3">
+          <span class="prize-card__inner">
+            <span class="prize-card__face prize-card__face--front">
+              <span class="prize-card__art" data-card-art="cardBack1"></span>
+              <span class="prize-card__deco" aria-hidden="true">
+                <svg class="d d1" viewBox="0 0 100 100"><use href="#sym-leg"/></svg>
+                <svg class="d d2" viewBox="0 0 100 100"><use href="#sym-wing"/></svg>
+                <svg class="d d3" viewBox="0 0 100 100"><use href="#sym-special"/></svg>
+              </span>
+              <span class="prize-card__mark" aria-hidden="true">?</span>
+              <span class="prize-card__tag">Toca para revelar</span>
+            </span>
+            <span class="prize-card__face prize-card__face--back">
+              <span class="prize-card__prize-art"></span>
+              <span class="prize-card__prize-text"><span class="prize-card__prize-name"></span><span class="prize-card__prize-sub"></span></span>
+            </span>
+          </span>
+        </button>
+
+        <button type="button" class="prize-card prize-card--2" data-card="1" aria-label="Tarjeta misteriosa 2 de 3">
+          <span class="prize-card__inner">
+            <span class="prize-card__face prize-card__face--front">
+              <span class="prize-card__art" data-card-art="cardBack2"></span>
+              <span class="prize-card__deco" aria-hidden="true">
+                <svg class="d d1" viewBox="0 0 100 100"><use href="#sym-wing"/></svg>
+                <svg class="d d2" viewBox="0 0 100 100"><use href="#sym-special"/></svg>
+                <svg class="d d3" viewBox="0 0 100 100"><use href="#sym-leg"/></svg>
+              </span>
+              <span class="prize-card__mark" aria-hidden="true">?</span>
+              <span class="prize-card__tag">Toca para revelar</span>
+            </span>
+            <span class="prize-card__face prize-card__face--back">
+              <span class="prize-card__prize-art"></span>
+              <span class="prize-card__prize-text"><span class="prize-card__prize-name"></span><span class="prize-card__prize-sub"></span></span>
+            </span>
+          </span>
+        </button>
+
+        <button type="button" class="prize-card prize-card--3" data-card="2" aria-label="Tarjeta misteriosa 3 de 3">
+          <span class="prize-card__inner">
+            <span class="prize-card__face prize-card__face--front">
+              <span class="prize-card__art" data-card-art="cardBack3"></span>
+              <span class="prize-card__deco" aria-hidden="true">
+                <svg class="d d1" viewBox="0 0 100 100"><use href="#sym-special"/></svg>
+                <svg class="d d2" viewBox="0 0 100 100"><use href="#sym-leg"/></svg>
+                <svg class="d d3" viewBox="0 0 100 100"><use href="#sym-wing"/></svg>
+              </span>
+              <span class="prize-card__mark" aria-hidden="true">?</span>
+              <span class="prize-card__tag">Toca para revelar</span>
+            </span>
+            <span class="prize-card__face prize-card__face--back">
+              <span class="prize-card__prize-art"></span>
+              <span class="prize-card__prize-text"><span class="prize-card__prize-name"></span><span class="prize-card__prize-sub"></span></span>
+            </span>
+          </span>
+        </button>
+      </div>
+      <p class="rewards__status" id="rewards-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- 4. CUPÓN -->
+  <section class="screen screen--coupon" id="screen-coupon" aria-labelledby="coupon-name">
+    <article class="ticket" id="ticket">
+      <div class="ticket__top">
+        <span class="ticket__stamp" aria-hidden="true">DEMO</span>
+        <p class="ticket__kicker">¡Tu recompensa!</p>
+        <div class="ticket__art" data-art="couponPrize" data-symbol="sym-special" id="coupon-art"></div>
+        <h2 id="coupon-name">Cupón</h2>
+        <p class="ticket__offer"><b id="coupon-offer">10%</b><span id="coupon-offer-sub">de descuento</span></p>
+      </div>
+      <div class="ticket__bottom">
+        <p class="ticket__codelabel">Tu código de demostración</p>
+        <code class="code" id="coupon-code" tabindex="0" aria-label="Código del cupón">DEMO-KFC-0000</code>
+        <div class="btn-row">
+          <button type="button" class="btn btn--red" id="btn-copy"><svg class="btn__icon" aria-hidden="true"><use id="ic-copy-use" href="#ic-copy"/></svg><span id="btn-copy-label">COPIAR CUPÓN</span></button>
+          <button type="button" class="btn btn--ghost-dark" id="btn-again"><svg class="btn__icon" aria-hidden="true"><use href="#ic-replay"/></svg><span>VOLVER A JUGAR</span></button>
+        </div>
+        <p class="copy-fallback" id="copy-fallback" hidden>Tu navegador no permitió copiar automáticamente. El código quedó seleccionado: pulsa Ctrl+C (o mantén pulsado en el móvil) para copiarlo.</p>
+        <p class="ticket__terms">Condiciones de la demostración: este cupón no se puede canjear, no tiene valor monetario y solo existe dentro de esta experiencia. Los premios y códigos se generan al azar con fines ilustrativos.</p>
+        <p class="ticket__disclaimer"><strong>DEMO NO OFICIAL. CUPÓN FICTICIO SIN VALIDEZ COMERCIAL.</strong> Esta experiencia es un prototipo demostrativo y no está afiliada ni patrocinada por KFC.</p>
+      </div>
+    </article>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="ticker" id="ticker" role="region" aria-label="Términos y condiciones de la demostración">
+    <span class="ticker__label"><span class="ticker__label-long">TÉRMINOS Y CONDICIONES</span><span class="ticker__label-short">T&amp;C</span></span>
+    <div class="ticker__viewport" id="ticker-viewport"><div class="ticker__track" id="ticker-track"></div></div>
+  </div>
+</footer>
+
+<div class="wipe" id="wipe" aria-hidden="true"></div>
+<canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<noscript><p style="position:fixed;inset:auto 0 40% 0;text-align:center;color:#fff;font:700 1.2rem sans-serif">Activa JavaScript para jugar.</p></noscript>
+<script src="script.js" defer></script>
+</body>
+</html>
